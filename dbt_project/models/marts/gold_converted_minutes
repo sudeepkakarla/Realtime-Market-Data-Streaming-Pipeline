@@ -1,0 +1,43 @@
+WITH gold AS (
+
+    SELECT *
+    FROM {{ ref('gold_minute') }}
+
+),
+
+fx AS (
+
+    SELECT *
+    FROM {{ ref('fx_minute') }}
+
+),
+
+-- Converted currencies
+converted AS (
+
+    SELECT
+        g.metal,
+        g.minute_ts,
+        f.currency,
+        g.max_price_usd * f.max_rate AS price_value
+    FROM gold g
+    JOIN fx f
+        ON g.minute_ts = f.minute_ts
+
+),
+
+-- USD base currency
+usd_base AS (
+
+    SELECT
+        metal,
+        minute_ts,
+        'USD' AS currency,
+        max_price_usd AS price_value
+    FROM gold
+
+)
+
+SELECT * FROM converted
+UNION ALL
+SELECT * FROM usd_base

@@ -1,0 +1,27 @@
+WITH base AS (
+
+    SELECT *
+    FROM {{ ref('gold_converted_minutes') }}
+
+),
+
+weights AS (
+
+    SELECT '1 Troy OZ' AS weight_unit, 1 AS multiplier
+    UNION ALL
+    SELECT '1 Gram', 1 / 31.1034768
+    UNION ALL
+    SELECT '100 Grams', 100 / 31.1034768
+    UNION ALL
+    SELECT '1 Kilogram', 1000 / 31.1034768
+
+)
+
+SELECT
+    b.metal,
+    b.minute_ts,
+    b.currency,
+    w.weight_unit,
+    b.price_value * w.multiplier AS price_value
+FROM base b
+CROSS JOIN weights w
